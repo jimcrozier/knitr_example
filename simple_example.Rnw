@@ -1,8 +1,4 @@
----
-output:
-  pdf_document: default
-  html_document: default
----
+
 \documentclass{report}
 
 \usepackage{longtable}
@@ -64,7 +60,7 @@ Example text
 The raw dataset included limited data from May of 2016 to July of 2017...
 <<echo=FALSE, results='asis',fig.width = 6, fig.height = 3>>=
   suppressMessages(library(dplyr))
-
+library(tidyr)
 
  library(feather)
 library(xtable)
@@ -121,7 +117,7 @@ For the analytical dataset I cut the data down to July, 2016 - April, 2017
 
 
   suppressMessages(library(dplyr))
-
+library(tidyr)
 
  library(feather)
 library(xtable)
@@ -211,7 +207,7 @@ qd = function(beta0, beta1, p){
 cost = 5 
 
 fnout = list()
-nrun=0;for (price in seq(0,10,by=0.25)){
+nrun=0;for (price in seq(0,10,by=1)){
   q = qd(100, -10, price)
   #if(q > 50)  q = qd(100, -15, price)
   nrun=nrun + 1
@@ -233,12 +229,7 @@ print(xtable(df, caption = "Top Line Domain"),format.args = list( big.mark = ","
 \dots + \beta_{12 }\text{immigration})} \label{eq:glm1} 
 \end{equation}
 
-\subsection{Email Addresses With History}
-
-\begin{figure}[t]
-\includegraphics{optprice.pdf} 
-\centering
-\end{figure}
+\subsection{Some Subsection}
 
 
 \blindtext

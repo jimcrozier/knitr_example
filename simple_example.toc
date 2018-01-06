@@ -1,0 +1,9 @@
+\select@language {english}
+\contentsline {section}{\numberline {0.1}Overview}{2}{section.0.1}
+\contentsline {section}{\numberline {0.2}Exploratory Data Analysis}{3}{section.0.2}
+\contentsline {subsection}{\numberline {0.2.1}Sends Data}{3}{subsection.0.2.1}
+\contentsline {section}{\numberline {0.3}Analytical Dataset}{3}{section.0.3}
+\contentsline {subsection}{\numberline {0.3.1}Dependent Variable}{3}{subsection.0.3.1}
+\contentsline {subsubsection}{\numberline {0.3.1.1}Some subsection }{3}{subsubsection.0.3.1.1}
+\contentsline {subsection}{\numberline {0.3.2}Model}{4}{subsection.0.3.2}
+\contentsline {subsection}{\numberline {0.3.3}Some Subsection}{4}{subsection.0.3.3}
