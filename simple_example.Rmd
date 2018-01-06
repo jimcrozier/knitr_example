@@ -1,0 +1,261 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+\documentclass{report}
+
+\usepackage{longtable}
+\usepackage[vcentering,dvips]{geometry}
+\usepackage{pdflscape}
+\usepackage{graphicx}
+\usepackage[colorlinks = true,linkcolor = blue ]{hyperref}
+\usepackage{textcomp}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{booktabs}
+\usepackage{amsmath}
+
+\usepackage[english]{babel}
+\usepackage{blindtext}
+
+\usepackage{rotating}
+\usepackage{pdflscape}
+
+
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\setlength{\parindent}{.3in}
+\setcounter{secnumdepth}{5}
+\geometry{
+        letterpaper,
+        left   =  1.0in,
+        right  = 1.0in,
+        top    = 1.0in,
+        bottom = 1.0in}
+
+\begin{document}
+
+
+\include{./source/title}
+\tableofcontents
+\newpage
+
+
+\section{Overview}
+Example text
+\begin{itemize}
+  \item Move data into Hive and Spark from Postgres + R 
+  \item Generate dependent variable and feature set 
+  \item Fit models and test for accuracy
+  \begin{itemize}
+  \item Test LM, Logitistic, Random Forest, Gradient Descent 
+  \item Test using all data vs history and no-history
+  \item Test variety of feature sets
+  \end{itemize}
+\end{itemize}
+
+\newpage 
+
+\section{Exploratory Data Analysis}
+
+
+\subsection{Sends Data}
+The raw dataset included limited data from May of 2016 to July of 2017...
+<<echo=FALSE, results='asis',fig.width = 6, fig.height = 3>>=
+  suppressMessages(library(dplyr))
+
+
+ library(feather)
+library(xtable)
+library(ggplot2)
+suppressMessages(library(lubridate))
+suppressMessages(library(gridExtra))
+
+qd = function(beta0, beta1, p){
+  q = beta0 + beta1*p
+  return(q)
+}
+
+
+cost = 5 
+
+fnout = list()
+nrun=0;for (price in seq(0,10,by=0.25)){
+  q = qd(100, -10, price)
+  #if(q > 50)  q = qd(100, -15, price)
+  nrun=nrun + 1
+  fnout[[nrun]] = data.frame(q= q, p = price,  rev = q*price, profit = q*price - q*cost)
+}
+
+fnout = do.call("rbind", fnout)
+
+
+dat = fnout %>% select(-q) %>% gather( key, value, -p, rev)  %>% 
+  mutate(key = as.factor(key)) %>% arrange(key)
+dat$key2 =  factor(dat$key, levels = rev(levels(dat$key)))
+
+pdf("optprice.pdf")
+ggplot(data=dat, aes(x=p, y=value, color=key2)) +
+  geom_line()  +
+  ylim(0, 300) + 
+  xlim(0, 10) + 
+  labs(title = "Revenue and Profit", x = "Price", y = "$", subtitle = paste0(
+    "Opt rev price of $", fnout[which.max(fnout$rev),]$p, 
+    " Opt profit price of $",fnout[which.max(fnout$profit),]$p)
+  ) +
+  scale_color_manual(labels = c("Revenue ($)", "Profit ($)"), values = c("rev"="darkred","profit"="steelblue")) +
+  guides(color=guide_legend("") ) + 
+  geom_vline(xintercept=fnout[which.max(fnout$profit),]$p,lty= 3, col = "steelblue") +
+  geom_vline(xintercept=fnout[which.max(fnout$rev),]$p,lty= 3, col = "darkred")
+
+
+@
+
+
+For the analytical dataset I cut the data down to July, 2016 - April, 2017
+
+<<echo=FALSE, results='asis',fig.width = 6, fig.height = 3>>=
+
+
+
+
+  suppressMessages(library(dplyr))
+
+
+ library(feather)
+library(xtable)
+library(ggplot2)
+suppressMessages(library(lubridate))
+suppressMessages(library(gridExtra))
+
+
+
+qd = function(beta0, beta1, p){
+  q = beta0 + beta1*p
+  return(q)
+}
+
+
+cost = 5 
+
+fnout = list()
+nrun=0;for (price in seq(0,10,by=0.25)){
+  q = qd(100, -10, price)
+  #if(q > 50)  q = qd(100, -15, price)
+  nrun=nrun + 1
+  fnout[[nrun]] = data.frame(q= q, p = price,  rev = q*price, profit = q*price - q*cost)
+}
+
+fnout = do.call("rbind", fnout)
+
+
+dat = fnout %>% select(-q) %>% gather( key, value, -p, rev)  %>% 
+  mutate(key = as.factor(key)) %>% arrange(key)
+dat$key2 =  factor(dat$key, levels = rev(levels(dat$key)))
+
+
+plot1 = ggplot(data=dat, aes(x=p, y=value, color=key2)) +
+  geom_line()  +
+  ylim(0, 300) + 
+  xlim(0, 10) + 
+  labs(title = "Revenue and Profit", x = "Price", y = "$", subtitle = paste0(
+    "Opt rev price of $", fnout[which.max(fnout$rev),]$p, 
+    " Opt profit price of $",fnout[which.max(fnout$profit),]$p)
+  ) +
+  scale_color_manual(labels = c("Revenue ($)", "Profit ($)"), values = c("rev"="darkred","profit"="steelblue")) +
+  guides(color=guide_legend("") ) + 
+  geom_vline(xintercept=fnout[which.max(fnout$profit),]$p,lty= 3, col = "steelblue") +
+  geom_vline(xintercept=fnout[which.max(fnout$rev),]$p,lty= 3, col = "darkred")
+
+plot2 = ggplot(data=dat, aes(x=p, y=value, color=key2)) +
+  geom_line()  +
+  ylim(0, 300) + 
+  xlim(0, 10) + 
+  labs(title = "Revenue and Profit", x = "Price", y = "$", subtitle = paste0(
+    "Opt rev price of $", fnout[which.max(fnout$rev),]$p, 
+    " Opt profit price of $",fnout[which.max(fnout$profit),]$p)
+  ) +
+  scale_color_manual(labels = c("Revenue ($)", "Profit ($)"), values = c("rev"="darkred","profit"="steelblue")) +
+  guides(color=guide_legend("") ) + 
+  geom_vline(xintercept=fnout[which.max(fnout$profit),]$p,lty= 3, col = "steelblue") +
+  geom_vline(xintercept=fnout[which.max(fnout$rev),]$p,lty= 3, col = "darkred")
+
+
+
+
+grid.arrange(plot1, plot2, ncol=2)
+
+@
+
+
+\section{Analytical Dataset}
+
+\subsection{Dependent Variable}
+
+
+
+
+\subsubsection{Some subsection }
+
+<<eval=FALSE>>=
+
+
+<<echo=FALSE, results='asis',fig.width = 6, fig.height = 3>>=
+qd = function(beta0, beta1, p){
+  q = beta0 + beta1*p
+  return(q)
+}
+
+
+cost = 5 
+
+fnout = list()
+nrun=0;for (price in seq(0,10,by=0.25)){
+  q = qd(100, -10, price)
+  #if(q > 50)  q = qd(100, -15, price)
+  nrun=nrun + 1
+  fnout[[nrun]] = data.frame(q= q, p = price,  rev = q*price, profit = q*price - q*cost)
+}
+
+df = do.call("rbind", fnout)
+
+print(xtable(df, caption = "Top Line Domain"),format.args = list( big.mark = ","),caption.placement = "top")
+
+@
+               
+                             
+\subsection{Model}
+\begin{equation}
+  \operatorname{Pr}(\text{Event} = 1 \mid \text{X})
+ = \frac{\exp(\beta_{0} + \beta_{1} \text{Gender} + \beta_{2} \text{Age} + \dots +
+    \beta_{12} \text{immigration)} }{1 + \exp(\beta_{0} + \beta_{1} \text{Gender} + \beta_{2} \text{Age} +
+\dots + \beta_{12 }\text{immigration})} \label{eq:glm1} 
+\end{equation}
+
+\subsection{Email Addresses With History}
+
+\begin{figure}[t]
+\includegraphics{optprice.pdf} 
+\centering
+\end{figure}
+
+
+\blindtext
+
+\begin{figure}[ !htb]
+\minipage{0.49\textwidth}
+  \includegraphics[width=\linewidth,height = 6cm]{optprice.pdf}
+  \caption{Model 1 Importance}\label{fig:awesome_image1}
+\endminipage\hfill
+\minipage{0.49\textwidth}
+  \includegraphics[width=\linewidth]{optprice.pdf}
+  \caption{Model 1 Effects}\label{fig:awesome_image2}
+\endminipage\hfill
+
+\end{figure}
+
+
+\blindtext
+
+\end{document}
